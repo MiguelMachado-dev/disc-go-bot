@@ -1,14 +1,39 @@
-.PHONY: build run clean
+# Variables
+APP_NAME = disc-go-bot
+IMAGE_TAG = latest
+DOCKERFILE_PATH = Dockerfile
+PORT = 8080
 
-IMAGE_NAME := golang:1.20
-CONTAINER_NAME := disc-go-bot
+# Default target
+all: build
 
+# Build the application
 build:
-	docker build -t $(IMAGE_NAME) .
+	go build -o $(APP_NAME)
 
-run:
-	docker run -d --name $(CONTAINER_NAME) -p 8080:8080 $(IMAGE_NAME)
+# Build the Docker image
+docker-build:
+	docker build -t $(APP_NAME):$(IMAGE_TAG) -f $(DOCKERFILE_PATH) .
 
+# Run the application in a Docker container
+docker-run: docker-build
+	docker run -it --rm -p $(PORT):$(PORT) --name $(APP_NAME) $(APP_NAME):$(IMAGE_TAG)
+
+# Stop and remove the running Docker container
+docker-stop:
+	docker stop $(APP_NAME)
+
+# Clean up build artifacts
 clean:
-	docker rm -f $(CONTAINER_NAME) || true
-	docker rmi -f $(IMAGE_NAME) || true
+	rm -f $(APP_NAME)
+
+# Execute tests
+test:
+	go test -v ./...
+
+# Build and run the application locally
+run: build
+	./$(APP_NAME)
+
+.PHONY: all build docker-build docker-run docker-stop clean test run
+
