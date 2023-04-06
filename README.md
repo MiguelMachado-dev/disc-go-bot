@@ -31,10 +31,10 @@ To use this project, you need to follow these steps:
 Now, your bot should be running and connected to Discord. Invite the bot to your server and start using the commands.
 
 ## Usage
-- >ping: The bot will respond with "Pong!"
-- >meow: The bot will send a random cat image.
-- >auau: The bot will send a random dog image.
-- >birb: The bot will send a random bird image.
+- `>ping`: The bot will respond with "Pong!"
+- `>meow`: The bot will send a random cat image.
+- `>auau`: The bot will send a random dog image.
+- `>birb`: The bot will send a random bird image.
 
 ## Makefile Commands
 
