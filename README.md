@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/MiguelMachado-dev/disc-go-bot)](https://goreportcard.com/report/github.com/MiguelMachado-dev/disc-go-bot)
 
 <p align="center">
-  <img src="./assets/Migtito_blue_gopher_programmer_coding._programming.png" alt="Discord Golang bot Header">
+  <img src="./assets/Migtito_blue_gopher_programmer_coding._programming.png" alt="Discord Golang bot Header" width="400">
 </p>
 
 Discord Golang bot is a simple Discord bot built using Golang, primarily for study purposes. The bot can respond to various commands and provide users with images of cats, dogs, and birds.
