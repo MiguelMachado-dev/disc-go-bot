@@ -17,7 +17,7 @@ docker-build:
 
 # Run the application in a Docker container
 docker-run: docker-build
-	docker run -it --rm -p $(PORT):$(PORT) --name $(APP_NAME) $(APP_NAME):$(IMAGE_TAG)
+	docker run -d --rm -p $(PORT):$(PORT) --name $(APP_NAME) $(APP_NAME):$(IMAGE_TAG)
 
 # Stop and remove the running Docker container
 docker-stop:
@@ -36,4 +36,3 @@ run: build
 	./$(APP_NAME)
 
 .PHONY: all build docker-build docker-run docker-stop clean test run
-
