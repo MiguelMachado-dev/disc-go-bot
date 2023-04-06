@@ -42,6 +42,18 @@ func main() {
 		return
 	}
 
+	// Set the bot's presence to "Watching"
+	dg.UpdateStatusComplex(discordgo.UpdateStatusData{
+		Activities: []*discordgo.Activity{
+			{
+				Name: "Migtito on Twitch",
+				Type: discordgo.ActivityTypeStreaming,
+				URL:  "https://www.twitch.tv/Migtito",
+			},
+		},
+		Status: "online",
+	})
+
 	// Change voice channel name each 5 minutes
 	go ChangeVoiceChannelNamePeriodically(dg, "1086042539997536336", 5)
 
