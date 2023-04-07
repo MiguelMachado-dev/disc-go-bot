@@ -36,7 +36,7 @@ func ChangeVoiceChannelNamePeriodically(s *discordgo.Session, channelID string, 
 			continue
 		}
 
-		newName := fmt.Sprintf("Guilty Gear Players: %s", players)
+		newName := fmt.Sprintf("GG Strive p: %s", players)
 
 		// Change the voice channel name
 		changeVoiceChannelName(s, channelID, newName)

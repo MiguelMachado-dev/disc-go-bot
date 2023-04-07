@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/gocolly/colly"
@@ -16,15 +17,19 @@ func GuiltyGear(playersCh chan string) {
 	fmt.Println("Start scraping at", time.Now())
 
 	c := colly.NewCollector(
-		colly.AllowedDomains("steamcharts.com"),
+		colly.AllowedDomains("steamcommunity.com"),
 	)
 
-	c.OnHTML("#app-heading div.app-stat:first-of-type", func(e *colly.HTMLElement) {
+	c.OnHTML(".apphub_HeaderBottom div.apphub_Stats", func(e *colly.HTMLElement) {
 		stats := Stats{}
-		stats.Players = e.ChildText(".num")
+		stats.Players = e.ChildText(".apphub_NumInApp")
+
+		// Use a regular expression to match numbers and commas
+		re := regexp.MustCompile(`[\d,]+`)
+		matches := re.FindString(stats.Players)
 
 		// Send the players count through the channel
-		playersCh <- stats.Players
+		playersCh <- matches
 	})
 
 	c.OnResponse(func(r *colly.Response) {
@@ -35,5 +40,5 @@ func GuiltyGear(playersCh chan string) {
 		fmt.Println("Visiting", r.URL)
 	})
 
-	c.Visit("https://steamcharts.com/app/1384160")
+	c.Visit("https://steamcommunity.com/app/1384160")
 }
