@@ -16,6 +16,7 @@ Discord Golang bot is a simple Discord bot built using Golang, primarily for stu
 - Send a random cat image with the `meow` command.
 - Send a random dog image with the `auau` command.
 - Send a random bird image with the `birb` command.
+- Periodically update a voice channel's name with the current number of Guilty Gear STRIVE players.
 
 ## Setup
 
@@ -35,6 +36,8 @@ Now, your bot should be running and connected to Discord. Invite the bot to your
 - `>meow`: The bot will send a random cat image.
 - `>auau`: The bot will send a random dog image.
 - `>birb`: The bot will send a random bird image.
+
+The bot will also automatically update the specified voice channel's name every few minutes (30 minutes as default) to display the current number of Guilty Gear players.
 
 ## Makefile Commands
 
