@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
+	"github.com/MiguelMachado-dev/disc-go-bot/scraper"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -19,12 +19,18 @@ func changeVoiceChannelName(s *discordgo.Session, channelID string, newName stri
 }
 
 func ChangeVoiceChannelNamePeriodically(s *discordgo.Session, channelID string, intervalMinutes int) {
+	playersCh := make(chan string)
+
+	// Start the scraper in a separate goroutine
+	go scraper.GuiltyGear(playersCh)
+	// Receive the players count from the channel
+	players := <-playersCh
+
 	ticker := time.NewTicker(time.Duration(intervalMinutes) * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		// Gere um novo nome para o canal de voz
-		newName := fmt.Sprintf("Voice Channel %d", rand.Intn(1000))
+		newName := fmt.Sprintf("Guilty Gear Players: %s", players)
 
 		// Altere o nome do canal de voz
 		changeVoiceChannelName(s, channelID, newName)

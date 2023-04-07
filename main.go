@@ -42,7 +42,7 @@ func main() {
 		return
 	}
 
-	// Set the bot's presence to "Watching"
+	// Set the bot's presence to "Streaming on Twitch"
 	dg.UpdateStatusComplex(discordgo.UpdateStatusData{
 		Activities: []*discordgo.Activity{
 			{
@@ -54,8 +54,8 @@ func main() {
 		Status: "online",
 	})
 
-	// Change voice channel name each 5 minutes
-	go ChangeVoiceChannelNamePeriodically(dg, "1086042539997536336", 5)
+	// Change voice channel name each 30 minutes
+	go ChangeVoiceChannelNamePeriodically(dg, "1086042539997536336", 30)
 
 	// Wait here until CTRL-C or other term signal is received
 	fmt.Println("Bot is now running. Press CTRL-C to exit.")
