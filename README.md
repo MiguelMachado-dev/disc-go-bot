@@ -96,6 +96,7 @@ This project uses the following tools:
 
 - [Golang](https://golang.org/) for backend development
 - [DiscordGo](https://github.com/bwmarrin/discordgo) package that provides low level bindings to the Discord chat client API
+- [Colly](https://github.com/gocolly/colly) Elegant Scraper and Crawler Framework for Golang
 
 ## Contributing
 
