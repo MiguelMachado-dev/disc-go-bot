@@ -19,20 +19,26 @@ func changeVoiceChannelName(s *discordgo.Session, channelID string, newName stri
 }
 
 func ChangeVoiceChannelNamePeriodically(s *discordgo.Session, channelID string, intervalMinutes int) {
-	playersCh := make(chan string)
-
-	// Start the scraper in a separate goroutine
-	go scraper.GuiltyGear(playersCh)
-	// Receive the players count from the channel
-	players := <-playersCh
-
-	ticker := time.NewTicker(time.Duration(intervalMinutes) * time.Minute)
+	ticker := time.NewTicker(time.Duration(intervalMinutes) * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
+		playersCh := make(chan string)
+		go scraper.GuiltyGear(playersCh) // Call the scraper in a goroutine (concurrently)
+
+		var players string
+		select {
+		case players = <-playersCh:
+			// Successfully received players count from the scraper
+		case <-time.After(30 * time.Second):
+			// Timeout after 30 seconds if the scraper doesn't respond
+			fmt.Println("Scraper timed out")
+			continue
+		}
+
 		newName := fmt.Sprintf("Guilty Gear Players: %s", players)
 
-		// Altere o nome do canal de voz
+		// Change the voice channel name
 		changeVoiceChannelName(s, channelID, newName)
 	}
 }

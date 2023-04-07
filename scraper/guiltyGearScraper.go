@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -11,7 +12,8 @@ type Stats struct {
 }
 
 func GuiltyGear(playersCh chan string) {
-	fmt.Println("Start scraping")
+	// Prints time that the scraper started
+	fmt.Println("Start scraping at", time.Now())
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("steamcharts.com"),
