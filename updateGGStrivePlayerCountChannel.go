@@ -18,7 +18,7 @@ func changeVoiceChannelName(s *discordgo.Session, channelID string, newName stri
 	}
 }
 
-func ChangeVoiceChannelNamePeriodically(s *discordgo.Session, channelID string, intervalMinutes int) {
+func updateGGStrivePlayerCountChannel(s *discordgo.Session, channelID string, intervalMinutes int) {
 	ticker := time.NewTicker(time.Duration(intervalMinutes) * time.Minute)
 	defer ticker.Stop()
 
