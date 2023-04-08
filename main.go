@@ -74,7 +74,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Define the command prefix
-	prefix := ">"
+	prefix := os.Getenv("DISCORD_BOT_PREFIX")
 
 	// Check if the message starts with the command prefix
 	if !strings.HasPrefix(m.Content, prefix) {
