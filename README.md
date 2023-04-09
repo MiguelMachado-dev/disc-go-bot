@@ -6,7 +6,7 @@
   <img src="./assets/Migtito_blue_gopher_programmer_coding._programming.png" alt="Discord Golang bot Header" width="400">
 </p>
 
-Discord Golang bot is a simple Discord bot built using Golang, primarily for study purposes. The bot can respond to various commands and provide users with images of cats, dogs, and birds.
+Discord Golang bot is a simple Discord bot built using Golang, primarily for study purposes. The bot can respond to various commands and provide users with images of cats and birds.
 
 ---
 
@@ -14,7 +14,6 @@ Discord Golang bot is a simple Discord bot built using Golang, primarily for stu
 
 - Respond to `ping` command.
 - Send a random cat image with the `meow` command.
-- Send a random dog image with the `auau` command.
 - Send a random bird image with the `birb` command.
 - Periodically update a voice channel's name with the current number of Guilty Gear STRIVE players.
 
@@ -36,7 +35,6 @@ You can change some settings like prefix on `.env` file.
 ## Usage
 - `>ping`: The bot will respond with "Pong!"
 - `>meow`: The bot will send a random cat image.
-- `>auau`: The bot will send a random dog image.
 - `>birb`: The bot will send a random bird image.
 
 The bot will also automatically update the specified voice channel's name every few minutes (30 minutes as default) to display the current number of Guilty Gear players.
