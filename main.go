@@ -11,6 +11,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var serverVoiceChannelIDs = make(map[string]string)
+
 func main() {
 	// Load the .env file
 	err := godotenv.Load()
@@ -98,5 +100,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		SendCatImage(s, m.ChannelID)
 	case "birb":
 		SendBirbImage(s, m.ChannelID)
+	case "setchannel":
+		if len(args) != 2 {
+			usageMessage := fmt.Sprintf("Usage: %ssetchannel [channelID]", prefix)
+			s.ChannelMessageSend(m.ChannelID, usageMessage)
+			return
+		}
+
+		if isUserAdmin(s, m) {
+			serverVoiceChannelIDs[m.GuildID] = args[1]
+			s.ChannelMessageSend(m.ChannelID, "Voice channel updated! - Comando em beta, não faz nada.")
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "You don't have permission to set the voice channel.")
+		}
 	}
 }
