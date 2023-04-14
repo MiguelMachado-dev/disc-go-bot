@@ -22,6 +22,7 @@ func main() {
 	// Get the bot token from the environment variable
 	token := os.Getenv("DISCORD_BOT_TOKEN")
 	guiltyGearStriveChannelID := os.Getenv("GG_CHANNEL_ID")
+	caliberChannelID := os.Getenv("CALIBER_CHANNEL_ID")
 
 	// Create a new Discord session using the bot token
 	dg, err := discordgo.New("Bot " + token)
@@ -54,6 +55,7 @@ func main() {
 
 	// Change voice channel name each 30 minutes
 	go updateGGStrivePlayerCountChannel(dg, guiltyGearStriveChannelID, 30)
+	go updateCaliberPlayerCountChannel(dg, caliberChannelID, 30)
 
 	// Wait here until CTRL-C or other term signal is received
 	fmt.Println("Bot is now running. Press CTRL-C to exit.")
