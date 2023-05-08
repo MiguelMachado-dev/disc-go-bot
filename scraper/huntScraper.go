@@ -1,10 +1,10 @@
 package scraper
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 
+	"github.com/MiguelMachado-dev/disc-go-bot/config"
 	"github.com/gocolly/colly"
 )
 
@@ -12,9 +12,11 @@ type Stats struct {
 	Players string
 }
 
-func GuiltyGear(playersCh chan string) {
+var log = config.NewLogger("huntScraper")
+
+func hunt(playersCh chan string) {
 	// Prints time that the scraper started
-	fmt.Println("Start scraping at", time.Now())
+	log.Infoln("Start scraping at", time.Now())
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("steamcommunity.com"),
@@ -33,12 +35,12 @@ func GuiltyGear(playersCh chan string) {
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		fmt.Println("Status code:", r.StatusCode)
+		log.Infoln("Status code:", r.StatusCode)
 	})
 
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		log.Infoln("Visiting:", r.URL)
 	})
 
-	c.Visit("https://steamcommunity.com/app/1384160")
+	c.Visit("https://steamcommunity.com/app/594650")
 }
