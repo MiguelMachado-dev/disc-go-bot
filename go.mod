@@ -6,6 +6,8 @@ require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/gocolly/colly v1.2.0
 	github.com/joho/godotenv v1.5.1
+	github.com/sashabaranov/go-openai v1.8.0
+	github.com/sirupsen/logrus v1.9.0
 )
 
 require (
