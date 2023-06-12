@@ -5,8 +5,6 @@ import (
 	"github.com/MiguelMachado-dev/disc-go-bot/discord"
 )
 
-var serverVoiceChannelIDs = make(map[string]string)
-
 func main() {
 	config.Init()
 

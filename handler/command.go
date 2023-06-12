@@ -8,6 +8,5 @@ type CommandHandler interface {
 }
 
 var CommandHandlers = []CommandHandler{
-	&PingHandler{},
-	&HuntHandler{},
+	&DeleteHandler{},
 }

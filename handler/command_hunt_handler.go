@@ -27,7 +27,7 @@ func (h *HuntHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 	scraper.ChangePlayersCount(s, huntChannelID)
 
 	if err != nil {
-		log.Errorf("error responding to ping: %v", err)
+		log.Errorf("Error updating Hunt: Showdown players count: %v", err)
 		return
 	}
 }
