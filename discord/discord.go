@@ -15,7 +15,7 @@ var log = config.NewLogger("discord")
 func Init() {
 	// Create a new Discord Session
 	token := config.GetEnv().DISCORD_BOT_TOKEN
-	worldTrackerChannelId := config.GetEnv().WORLD_TRACKER_CHANNEL_ID
+	commandsChannelId := config.GetEnv().COMMANDS_CHANNEL_ID
 
 	dg, err := discordgo.New("Bot " + token)
 	if err != nil {
@@ -55,7 +55,7 @@ func Init() {
 
 	// Start the delete messages ticker
 	// Delete messages from the channel every 24 hours
-	go handler.DeleteMessagesTicker(dg, worldTrackerChannelId, 24)
+	go handler.DeleteMessagesTicker(dg, commandsChannelId, 24)
 
 	log.Infoln("Bot is now running. Press CTRL-C to exit.")
 

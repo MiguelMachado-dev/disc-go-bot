@@ -9,9 +9,9 @@ import (
 )
 
 type Environment struct {
-	DISCORD_BOT_TOKEN        string
-	HUNT_CHANNEL_ID          string
-	WORLD_TRACKER_CHANNEL_ID string
+	DISCORD_BOT_TOKEN   string
+	HUNT_CHANNEL_ID     string
+	COMMANDS_CHANNEL_ID string
 }
 
 var environment Environment
