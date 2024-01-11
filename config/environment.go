@@ -10,7 +10,6 @@ import (
 
 type Environment struct {
 	DISCORD_BOT_TOKEN   string
-	HUNT_CHANNEL_ID     string
 	COMMANDS_CHANNEL_ID string
 }
 

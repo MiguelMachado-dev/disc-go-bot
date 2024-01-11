@@ -50,9 +50,6 @@ func Init() {
 		return
 	}
 
-	// Change voice channel name each 30 minutes
-	// go scraper.UpdateHuntPlayerCountTicker(dg, huntChannelID, 30)
-
 	// Start the delete messages ticker
 	// Delete messages from the channel every 24 hours
 	go handler.DeleteMessagesTicker(dg, commandsChannelId, 24)

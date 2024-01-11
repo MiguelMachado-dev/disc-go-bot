@@ -9,4 +9,6 @@ type CommandHandler interface {
 
 var CommandHandlers = []CommandHandler{
 	&DeleteHandler{},
+	&LiveHandler{},
+	&PriceHandler{},
 }

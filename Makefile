@@ -2,7 +2,7 @@
 APP_NAME = disc-go-bot
 IMAGE_TAG = latest
 DOCKERFILE_PATH = Dockerfile
-PORT = 8080
+PORT = 8081
 
 # Default target
 all: build
@@ -23,6 +23,11 @@ docker-run: docker-build
 docker-stop:
 	docker stop $(APP_NAME)
 
+# Restart running Docker container
+docker-restart:
+	docker-stop
+	docker-run
+
 # Clean up build artifacts
 clean:
 	rm -f $(APP_NAME)
@@ -35,4 +40,4 @@ test:
 run: build
 	./$(APP_NAME)
 
-.PHONY: all build docker-build docker-run docker-stop clean test run
+.PHONY: all build docker-build docker-run docker-stop docker-restart  clean test run

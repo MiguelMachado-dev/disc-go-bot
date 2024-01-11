@@ -12,7 +12,7 @@ type DeleteHandler struct{}
 func (h *DeleteHandler) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "delete-messages",
-		Description: "Delete a number of messages from current channel",
+		Description: "Delete last 100 messages from current channel",
 	}
 }
 
