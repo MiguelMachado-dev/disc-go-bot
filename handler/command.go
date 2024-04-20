@@ -11,4 +11,5 @@ var CommandHandlers = []CommandHandler{
 	&DeleteHandler{},
 	&LiveHandler{},
 	&PriceHandler{},
+	&AskHandler{},
 }
