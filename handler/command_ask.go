@@ -73,7 +73,7 @@ func (h *AskHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCreat
 		"stream": true
 	}`)
 
-	req, err := http.NewRequest("POST", "http://localhost:1234/v1/chat/completions", body)
+	req, err := http.NewRequest("POST", "http://192.168.3.2:1234/v1/chat/completions", body)
 	if err != nil {
 		log.Println("Error creating request", err)
 		return

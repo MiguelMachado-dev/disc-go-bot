@@ -2,7 +2,7 @@
 APP_NAME = disc-go-bot
 IMAGE_TAG = latest
 DOCKERFILE_PATH = Dockerfile
-PORT = 8081
+PORT = 8080
 
 # Default target
 all: build

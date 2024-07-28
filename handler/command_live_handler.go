@@ -2,8 +2,11 @@ package handler
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type LiveHandler struct{}
@@ -18,6 +21,22 @@ func (h *LiveHandler) Command() *discordgo.ApplicationCommand {
 				Name:        "username",
 				Description: "Username of the live streamer",
 				Required:    true,
+			},
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "platform",
+				Description: "Streaming platform (twitch or youtube)",
+				Required:    true,
+				Choices: []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Twitch",
+						Value: "twitch",
+					},
+					{
+						Name:  "YouTube",
+						Value: "youtube",
+					},
+				},
 			},
 		},
 	}
@@ -51,26 +70,50 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 		return
 	}
 
-	// Extract the username
-	username := i.ApplicationCommandData().Options[0].StringValue()
+	// Extract the username and platform
+	options := i.ApplicationCommandData().Options
+	username := options[0].StringValue()
+	platform := strings.ToLower(options[1].StringValue())
 
-	// Construct Twitch stream URL
-	twitchURL := fmt.Sprintf("https://www.twitch.tv/%s", username)
-	twitchThumbnailURL := fmt.Sprintf("https://static-cdn.jtvnw.net/previews-ttv/live_user_%s-1920x1080.jpg", username)
+	var streamURL, thumbnailURL string
+	var color int
+
+	switch platform {
+	case "twitch":
+		streamURL = fmt.Sprintf("https://www.twitch.tv/%s", username)
+		thumbnailURL = fmt.Sprintf("https://static-cdn.jtvnw.net/previews-ttv/live_user_%s-1920x1080.jpg", username)
+		color = 0x6441A4 // Twitch purple
+	case "youtube":
+		streamURL = fmt.Sprintf("https://www.youtube.com/channel/%s/live", username)
+		thumbnailURL = fmt.Sprintf("https://img.youtube.com/vi/%s/maxresdefault.jpg", username)
+		color = 0xFF0000 // YouTube red
+	default:
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Invalid platform selected. Please choose either 'twitch' or 'youtube'.",
+			},
+		})
+		return
+	}
+
+	// Use cases.Title() instead of strings.Title()
+	caser := cases.Title(language.BrazilianPortuguese)
+	platformTitle := caser.String(platform)
 
 	// Create an embed message
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s está ao vivo!", username),
-		Description: fmt.Sprintf("Clique no link abaixo para assistir a live do %s.", username),
-		URL:         twitchURL, // Add the Twitch URL here
-		Color:       0x00ff00,  // Change color as needed
+		Title:       fmt.Sprintf("%s está ao vivo no %s!", username, platformTitle),
+		Description: fmt.Sprintf("Clique no link abaixo para assistir a live de %s.", username),
+		URL:         streamURL,
+		Color:       color,
 		Image: &discordgo.MessageEmbedImage{
-			URL: twitchThumbnailURL, // Set the Twitch stream thumbnail as the image
+			URL: thumbnailURL,
 		},
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:  "Link da live",
-				Value: twitchURL,
+				Value: streamURL,
 			},
 		},
 	}

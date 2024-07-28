@@ -34,7 +34,7 @@ func Init() {
 	dg.UpdateStatusComplex(discordgo.UpdateStatusData{
 		Activities: []*discordgo.Activity{
 			{
-				Name: "@oMigtito on YouTube",
+				Name: "Migtito on Twitch",
 				Type: discordgo.ActivityTypeStreaming,
 				URL:  "https://www.twitch.tv/migtito",
 			},
