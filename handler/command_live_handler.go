@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/MiguelMachado-dev/disc-go-bot/config"
+	"github.com/MiguelMachado-dev/disc-go-bot/utils"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -89,7 +90,7 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 		color = 0x6441A4 // Twitch purple
 
 		// Fetch Twitch channel info
-		accessToken, err := h.getTwitchAccessToken()
+		accessToken, err := utils.GetTwitchAccessToken()
 		if err != nil {
 			log.Errorf("Error getting Twitch access token: %v", err)
 			break
@@ -195,34 +196,6 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 	})
 }
 
-func (h *LiveHandler) getTwitchAccessToken() (string, error) {
-	TwitchClientID := config.GetEnv().TWITCH_CLIENT_ID
-	TwitchClientSecret := config.GetEnv().TWITCH_CLIENT_SECRET
-
-	url := "https://id.twitch.tv/oauth2/token"
-	payload := strings.NewReader(fmt.Sprintf("client_id=%s&client_secret=%s&grant_type=client_credentials", TwitchClientID, TwitchClientSecret))
-	req, _ := http.NewRequest("POST", url, payload)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("failed to send request: %v", err)
-	}
-	defer res.Body.Close()
-
-	body, _ := ioutil.ReadAll(res.Body)
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return "", fmt.Errorf("failed to parse response: %v", err)
-	}
-
-	if accessToken, ok := result["access_token"].(string); ok {
-		return accessToken, nil
-	}
-	return "", fmt.Errorf("access token not found in response: %v", result)
-}
-
 type TwitchChannelInfo struct {
 	ID              string `json:"id"`
 	Login           string `json:"login"`
@@ -272,9 +245,11 @@ type TwitchStreamInfo struct {
 }
 
 func (h *LiveHandler) getTwitchStreamInfo(username, accessToken string) (*TwitchStreamInfo, error) {
+	TwitchClientID := config.GetEnv().TWITCH_CLIENT_ID
+
 	url := fmt.Sprintf("https://api.twitch.tv/helix/streams?user_login=%s", username)
 	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Add("Client-ID", "2ld69qispua7q167rst5mz7p150efj")
+	req.Header.Add("Client-ID", TwitchClientID)
 	req.Header.Add("Authorization", "Bearer "+accessToken)
 
 	res, err := http.DefaultClient.Do(req)
