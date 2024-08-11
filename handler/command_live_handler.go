@@ -82,7 +82,6 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 
 	var streamURL, thumbnailURL, streamTitle string
 	var color int
-	var isLive bool
 
 	switch platform {
 	case "twitch":
@@ -115,10 +114,11 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 			log.Errorf("Error getting Twitch stream info: %v", err)
 		}
 
-		isLive := streamInfo != nil
+		isLive := streamInfo != nil && streamInfo.Type == "live"
+		log.Infof("Is live: %v", isLive)
 		if isLive {
 			streamTitle = streamInfo.Title
-			thumbnailURL = streamInfo.ThumbnailURL
+			thumbnailURL = strings.Replace(streamInfo.ThumbnailURL, "{width}x{height}", "1280x720", 1)
 		} else {
 			thumbnailURL = channelInfo.ProfileImageURL
 		}
@@ -158,23 +158,16 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 	}
 
 	if platform == "twitch" {
-		if isLive {
-			embed.Title = fmt.Sprintf("%s está ao vivo no %s!", username, platformTitle)
-			embed.Description = fmt.Sprintf("Clique no link abaixo para assistir a live de %s.", username)
-			embed.Image = &discordgo.MessageEmbedImage{
-				URL: thumbnailURL,
-			}
-			embed.Thumbnail = nil
-			if streamTitle != "" {
-				embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-					Name:  "Título da Stream",
-					Value: streamTitle,
-				})
-			}
-		} else {
+		embed.Title = fmt.Sprintf("%s está ao vivo no %s!", username, platformTitle)
+		embed.Description = fmt.Sprintf("Clique no link abaixo para assistir a live de %s.", username)
+		embed.Image = &discordgo.MessageEmbedImage{
+			URL: thumbnailURL,
+		}
+		embed.Thumbnail = nil
+		if streamTitle != "" {
 			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-				Name:  "Status",
-				Value: "Offline",
+				Name:  "Título da Stream",
+				Value: streamTitle,
 			})
 		}
 	}
@@ -240,8 +233,20 @@ func (h *LiveHandler) getTwitchChannelInfo(username, accessToken string) (*Twitc
 }
 
 type TwitchStreamInfo struct {
-	Title        string `json:"title"`
-	ThumbnailURL string `json:"thumbnail_url"`
+	ID           string   `json:"id"`
+	UserID       string   `json:"user_id"`
+	UserName     string   `json:"user_name"`
+	GameID       string   `json:"game_id"`
+	GameName     string   `json:"game_name"`
+	Type         string   `json:"type"`
+	Title        string   `json:"title"`
+	ViewerCount  int      `json:"viewer_count"`
+	StartedAt    string   `json:"started_at"`
+	Language     string   `json:"language"`
+	ThumbnailURL string   `json:"thumbnail_url"`
+	TagIDs       []string `json:"tag_ids"`
+	Tags         []string `json:"tags"`
+	IsMature     bool     `json:"is_mature"`
 }
 
 func (h *LiveHandler) getTwitchStreamInfo(username, accessToken string) (*TwitchStreamInfo, error) {
