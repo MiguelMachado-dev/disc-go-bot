@@ -80,7 +80,7 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 	username := options[0].StringValue()
 	platform := strings.ToLower(options[1].StringValue())
 
-	var streamURL, thumbnailURL, streamTitle string
+	var streamURL, thumbnailURL, streamTitle, game, profilePic string
 	var color int
 
 	switch platform {
@@ -115,10 +115,11 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 		}
 
 		isLive := streamInfo != nil && streamInfo.Type == "live"
-		log.Infof("Is live: %v", isLive)
 		if isLive {
 			streamTitle = streamInfo.Title
 			thumbnailURL = strings.Replace(streamInfo.ThumbnailURL, "{width}x{height}", "1280x720", 1)
+			game = streamInfo.GameName
+			profilePic = channelInfo.ProfileImageURL
 		} else {
 			thumbnailURL = channelInfo.ProfileImageURL
 		}
@@ -158,17 +159,15 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 	}
 
 	if platform == "twitch" {
-		embed.Title = fmt.Sprintf("%s está ao vivo no %s!", username, platformTitle)
-		embed.Description = fmt.Sprintf("Clique no link abaixo para assistir a live de %s.", username)
+		if streamTitle != "" {
+			embed.Title = streamTitle
+		}
+		embed.Description = fmt.Sprintf("Jogando %s.", game)
 		embed.Image = &discordgo.MessageEmbedImage{
 			URL: thumbnailURL,
 		}
-		embed.Thumbnail = nil
-		if streamTitle != "" {
-			embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-				Name:  "Título da Stream",
-				Value: streamTitle,
-			})
+		embed.Thumbnail = &discordgo.MessageEmbedThumbnail{
+			URL: profilePic,
 		}
 	}
 
