@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/MiguelMachado-dev/disc-go-bot/config"
 	"github.com/MiguelMachado-dev/disc-go-bot/utils"
@@ -118,6 +119,7 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 		if isLive {
 			streamTitle = streamInfo.Title
 			thumbnailURL = strings.Replace(streamInfo.ThumbnailURL, "{width}x{height}", "1280x720", 1)
+			thumbnailURL = addCacheBuster(thumbnailURL)
 			game = streamInfo.GameName
 			profilePic = channelInfo.ProfileImageURL
 		} else {
@@ -278,4 +280,11 @@ func (h *LiveHandler) getTwitchStreamInfo(username, accessToken string) (*Twitch
 	}
 
 	return nil, nil
+}
+
+func addCacheBuster(url string) string {
+	if strings.Contains(url, "?") {
+		return url + "&cb=" + fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return url + "?cb=" + fmt.Sprintf("%d", time.Now().UnixNano())
 }
