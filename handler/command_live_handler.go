@@ -126,7 +126,7 @@ func (h *LiveHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCrea
 			thumbnailURL = channelInfo.ProfileImageURL
 		}
 	case "youtube":
-		streamURL = fmt.Sprintf("https://www.youtube.com/channel/%s/live", username)
+		streamURL = fmt.Sprintf("https://www.youtube.com/@%s/live", username)
 		thumbnailURL = fmt.Sprintf("https://img.youtube.com/vi/%s/maxresdefault.jpg", username)
 		color = 0xFF0000 // YouTube red
 	default:

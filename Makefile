@@ -13,11 +13,16 @@ build:
 
 # Build the Docker image
 docker-build:
-	docker build -t $(APP_NAME):$(IMAGE_TAG) -f $(DOCKERFILE_PATH) .
+	docker build \
+		--build-arg DISCORD_BOT_TOKEN=$$(grep DISCORD_BOT_TOKEN .env | cut -d '=' -f2) \
+		--build-arg COMMANDS_CHANNEL_ID=$$(grep COMMANDS_CHANNEL_ID .env | cut -d '=' -f2) \
+		--build-arg TWITCH_CLIENT_ID=$$(grep TWITCH_CLIENT_ID .env | cut -d '=' -f2) \
+		--build-arg TWITCH_CLIENT_SECRET=$$(grep TWITCH_CLIENT_SECRET .env | cut -d '=' -f2) \
+		-t migtito/$(APP_NAME):$(IMAGE_TAG) -f $(DOCKERFILE_PATH) .
 
 # Run the application in a Docker container
 docker-run: docker-build
-	docker run -d -p $(PORT):$(PORT) --name $(APP_NAME) --restart always $(APP_NAME):$(IMAGE_TAG)
+	docker run -d -p $(PORT):$(PORT) --name $(APP_NAME) --restart always migtito/$(APP_NAME):$(IMAGE_TAG)
 
 # Stop and remove the running Docker container
 docker-stop:
