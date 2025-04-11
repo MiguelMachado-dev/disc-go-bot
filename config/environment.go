@@ -13,6 +13,7 @@ type Environment struct {
 	COMMANDS_CHANNEL_ID  string
 	TWITCH_CLIENT_ID     string
 	TWITCH_CLIENT_SECRET string
+	ENCRYPTION_KEY       string
 }
 
 var environment Environment
@@ -28,9 +29,10 @@ func initializeEnvironment() error {
 		// Get environment variable value
 		value := os.Getenv(envVar)
 
-		// Check if the environment variable is set, otherwise return an error
+		// Check if the environment variable is set
 		if value == "" {
-			return errors.New("required environment variable " + envVar + " not set")
+			// No special handling for ENCRYPTION_KEY, require it in .env
+			return errors.New("required environment variable " + envVar + " not set. Please add it to your .env file")
 		}
 
 		envValue.FieldByName(envVar).SetString(value)

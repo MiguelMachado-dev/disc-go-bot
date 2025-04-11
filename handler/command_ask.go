@@ -1,21 +1,24 @@
 package handler
 
 import (
-	"bufio"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/MiguelMachado-dev/disc-go-bot/config"
+	"github.com/MiguelMachado-dev/disc-go-bot/database"
 	"github.com/bwmarrin/discordgo"
 )
 
+// AskHandler struct for Ask command
 type AskHandler struct{}
 
 func (h *AskHandler) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "ask-ai",
-		Description: "Ask the AI a question",
+		Description: "Ask the AI a question using Gemini API",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
@@ -27,114 +30,161 @@ func (h *AskHandler) Command() *discordgo.ApplicationCommand {
 	}
 }
 
-type Event struct {
-	ID      string `json:"id"`
-	Object  string `json:"object"`
-	Created int    `json:"created"`
-	Model   string `json:"model"`
-	Choices []struct {
-		Index int `json:"index"`
-		Delta struct {
-			Role    string `json:"role"`
-			Content string `json:"content"`
-		} `json:"delta"`
-		FinishReason interface{} `json:"finish_reason"`
-	} `json:"choices"`
+// SetGeminiKeyHandler handles the set-gemini-key command
+type SetGeminiKeyHandler struct{}
+
+func (h *SetGeminiKeyHandler) Command() *discordgo.ApplicationCommand {
+	return &discordgo.ApplicationCommand{
+		Name:        "set-gemini-key",
+		Description: "Set your Gemini API key",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "api-key",
+				Description: "Your Gemini API key",
+				Required:    true,
+			},
+		},
+	}
 }
 
-func (h *AskHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	q := i.ApplicationCommandData().Options[0].StringValue()
+func (h *SetGeminiKeyHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	apiKey := i.ApplicationCommandData().Options[0].StringValue()
+	userID := i.Member.User.ID
+	log := config.NewLogger("SetGeminiKeyHandler")
 
-	var netClient = &http.Client{
-		Timeout: time.Second * 10,
+	// Store the API key in the database
+	err := database.StoreGeminiAPIKey(userID, apiKey)
+	if err != nil {
+		log.Errorf("Error storing API key: %v", err)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "An error occurred while saving your API key. Please try again later.",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		return
 	}
 
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Starting to ask AI...",
+			Content: "Your Gemini API key has been set. You can now use the /ask-ai command.",
 			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 	if err != nil {
-		log.Println("Error responding to interaction", err)
+		log.Errorf("Error responding to interaction: %v", err)
+	}
+}
+
+// GeminiResponse represents the structure of the Gemini API response
+type GeminiResponse struct {
+	Candidates []struct {
+		Content struct {
+			Parts []struct {
+				Text string `json:"text"`
+			} `json:"parts"`
+		} `json:"content"`
+		FinishReason string `json:"finishReason"`
+	} `json:"candidates"`
+}
+
+func (h *AskHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	q := i.ApplicationCommandData().Options[0].StringValue()
+	userID := i.Member.User.ID
+	log := config.NewLogger("AskHandler")
+
+	// Get the API key from the database
+	apiKey, err := database.GetGeminiAPIKey(userID)
+	if err != nil {
+		log.Errorf("Error retrieving API key: %v", err)
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "You need to set your Gemini API key first with `/set-gemini-key`",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
 		return
 	}
 
-	// Make API request
-	body := strings.NewReader(`{
-		"model": "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF",
-		"messages": [
-			{ "role": "system", "content": "You are a helpful, smart, kind, and efficient AI assistant. You always fulfill the user's requests to the best of your ability." },
-			{ "role": "user", "content": "` + q + `"}
-		],
-		"temperature": 0.7,
-		"max_tokens": -1,
-		"stream": true
-	}`)
+	var netClient = &http.Client{
+		Timeout: time.Second * 30,
+	}
 
-	req, err := http.NewRequest("POST", "http://192.168.3.2:1234/v1/chat/completions", body)
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Asking Gemini AI...",
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
 	if err != nil {
-		log.Println("Error creating request", err)
+		log.Errorf("Error responding to interaction: %v", err)
+		return
+	}
+
+	// Gemini API request
+	requestBody := fmt.Sprintf(`{
+		"contents": [
+			{
+				"parts": [
+					{
+						"text": "%s"
+					}
+				]
+			}
+		],
+		"generationConfig": {
+			"temperature": 0.7,
+			"maxOutputTokens": 800
+		}
+	}`, strings.ReplaceAll(q, "\"", "\\\""))
+
+	req, err := http.NewRequest("POST", "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key="+apiKey, strings.NewReader(requestBody))
+	if err != nil {
+		log.Errorf("Error creating request: %v", err)
 		return
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := netClient.Do(req)
-
 	if err != nil {
-		log.Println("Error making request", err)
-		s.ChannelMessageSend(i.ChannelID, "Error making request. Maybe the AI server is down?")
+		log.Errorf("Error making request: %v", err)
+		s.ChannelMessageSend(i.ChannelID, "Error connecting to Gemini API. Please try again later.")
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Errorf("Gemini API error: %d - %s - API URL: %s", resp.StatusCode, resp.Status, req.URL.String())
+		errorMessage := fmt.Sprintf("Gemini API error: %s. Please check your API key and ensure it has access to the Gemini models.", resp.Status)
+		s.ChannelMessageSend(i.ChannelID, errorMessage)
 		return
 	}
 
-	defer resp.Body.Close()
+	var geminiResp GeminiResponse
+	if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
+		log.Errorf("Error decoding response: %v", err)
+		s.ChannelMessageSend(i.ChannelID, "Error processing response from Gemini API.")
+		return
+	}
 
 	var content string
-
-	scanner := bufio.NewScanner(resp.Body)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if strings.HasPrefix(line, "data: ") {
-			jsonData := strings.TrimPrefix(line, "data: ")
-
-			var js json.RawMessage
-			err = json.Unmarshal([]byte(jsonData), &js)
-			if err != nil {
-				log.Println("Received data is not valid JSON, skipping unmarshalling")
-				continue
-			}
-
-			var event Event
-			err = json.Unmarshal([]byte(jsonData), &event)
-			if err != nil {
-				log.Fatalln("Error unmarshalling response", err)
-			}
-
-			// Send all event.Choices[0].Delta.Content to the channel as one message
-			for _, choice := range event.Choices {
-				content += choice.Delta.Content
-			}
-
-		} else if line == "data: [DONE]" {
-			break
-		}
+	if len(geminiResp.Candidates) > 0 && len(geminiResp.Candidates[0].Content.Parts) > 0 {
+		content = geminiResp.Candidates[0].Content.Parts[0].Text
+	} else {
+		content = "No response generated."
 	}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatalln("Error reading response body", err)
-	}
+	// Send the response to the channel
+	msg := "> USER: " + q + "\n\nAI: " + content
 
-	var msg discordgo.MessageSend
-
-	msg.Content = "> USER: " + q + "\n\nAI: " + content
-
-	_, err = s.ChannelMessageSend(i.ChannelID, msg.Content)
-
+	_, err = s.ChannelMessageSend(i.ChannelID, msg)
 	if err != nil {
-		log.Println("Error sending message to channel", err)
+		log.Errorf("Error sending message to channel: %v", err)
 	}
 }

@@ -12,4 +12,5 @@ var CommandHandlers = []CommandHandler{
 	&LiveHandler{},
 	&PriceHandler{},
 	&AskHandler{},
+	&SetGeminiKeyHandler{},
 }
