@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/joho/godotenv v1.5.1
+	github.com/mattn/go-sqlite3 v1.14.27
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/text v0.14.0
 )
