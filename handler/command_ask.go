@@ -1,15 +1,14 @@
 package handler
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
 
 	"github.com/MiguelMachado-dev/disc-go-bot/config"
 	"github.com/MiguelMachado-dev/disc-go-bot/database"
 	"github.com/bwmarrin/discordgo"
+	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/option"
 )
 
 // AskHandler struct for Ask command
@@ -36,7 +35,7 @@ type SetGeminiKeyHandler struct{}
 func (h *SetGeminiKeyHandler) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "set-gemini-key",
-		Description: "Set your Gemini API key",
+		Description: "Set your Gemini API key (Don't worry, it's stored securely)",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionString,
@@ -110,10 +109,6 @@ func (h *AskHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCreat
 		return
 	}
 
-	var netClient = &http.Client{
-		Timeout: time.Second * 30,
-	}
-
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -126,56 +121,34 @@ func (h *AskHandler) Handler(s *discordgo.Session, i *discordgo.InteractionCreat
 		return
 	}
 
-	// Gemini API request
-	requestBody := fmt.Sprintf(`{
-		"contents": [
-			{
-				"parts": [
-					{
-						"text": "%s"
-					}
-				]
-			}
-		],
-		"generationConfig": {
-			"temperature": 0.7,
-			"maxOutputTokens": 800
-		}
-	}`, strings.ReplaceAll(q, "\"", "\\\""))
-
-	req, err := http.NewRequest("POST", "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key="+apiKey, strings.NewReader(requestBody))
+	// Create Gemini client using official library
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		log.Errorf("Error creating request: %v", err)
-		return
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := netClient.Do(req)
-	if err != nil {
-		log.Errorf("Error making request: %v", err)
+		log.Errorf("Error creating Gemini client: %v", err)
 		s.ChannelMessageSend(i.ChannelID, "Error connecting to Gemini API. Please try again later.")
 		return
 	}
-	defer resp.Body.Close()
+	defer client.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("Gemini API error: %d - %s - API URL: %s", resp.StatusCode, resp.Status, req.URL.String())
-		errorMessage := fmt.Sprintf("Gemini API error: %s. Please check your API key and ensure it has access to the Gemini models.", resp.Status)
-		s.ChannelMessageSend(i.ChannelID, errorMessage)
-		return
-	}
+	// Configure the model
+	model := client.GenerativeModel("gemini-2.0-flash")
+	temperature := float32(0.7)
+	maxOutputTokens := int32(800)
+	model.SetTemperature(temperature)
+	model.SetMaxOutputTokens(maxOutputTokens)
 
-	var geminiResp GeminiResponse
-	if err := json.NewDecoder(resp.Body).Decode(&geminiResp); err != nil {
-		log.Errorf("Error decoding response: %v", err)
-		s.ChannelMessageSend(i.ChannelID, "Error processing response from Gemini API.")
+	// Generate content
+	resp, err := model.GenerateContent(ctx, genai.Text(q))
+	if err != nil {
+		log.Errorf("Error generating content: %v", err)
+		s.ChannelMessageSend(i.ChannelID, "Error connecting to Gemini API. Please check your API key and try again later.")
 		return
 	}
 
 	var content string
-	if len(geminiResp.Candidates) > 0 && len(geminiResp.Candidates[0].Content.Parts) > 0 {
-		content = geminiResp.Candidates[0].Content.Parts[0].Text
+	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
+		content = fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0])
 	} else {
 		content = "No response generated."
 	}
