@@ -16,6 +16,8 @@ Discord Golang bot is a simple Discord bot built using Golang, primarily for stu
 - Send a random cat image with the `meow` command.
 - Send a random bird image with the `birb` command.
 - Periodically update a voice channel's name with the current number of Guilty Gear STRIVE players.
+- Ask AI questions via Gemini API with `/ask-ai` command.
+- Set your Gemini API key securely with `/set-gemini-key` command (stored in SQLite database).
 
 ## Setup
 
@@ -28,6 +30,8 @@ To use this project, you need to follow these steps:
 5. Build the application: `go build`
 6. Run the application: `./disc-go-bot`
 
+The application will automatically create an SQLite database in the `data` directory to store user Gemini API keys securely.
+
 Now, your bot should be running and connected to Discord. Invite the bot to your server and start using the commands.
 
 You can change some settings like prefix on `.env` file.
@@ -36,6 +40,8 @@ You can change some settings like prefix on `.env` file.
 - `>ping`: The bot will respond with "Pong!"
 - `>meow`: The bot will send a random cat image.
 - `>birb`: The bot will send a random bird image.
+- `/ask-ai`: Ask a question to the AI using the Gemini API (requires setting up your API key first).
+- `/set-gemini-key`: Set your personal Gemini API key (required to use the `/ask-ai` command).
 
 The bot will also automatically update the specified voice channel's name every few minutes (30 minutes as default) to display the current number of Guilty Gear players.
 
@@ -117,3 +123,18 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 ## Credits
 
 This project was created by [MiguelMachado-dev](https://github.com/MiguelMachado-dev).
+
+## Environment Variables
+
+Copy the `.env.example` file to `.env` and fill in the required environment variables:
+
+- `DISCORD_BOT_TOKEN`: Your Discord bot token
+- `COMMANDS_CHANNEL_ID`: The ID of the channel where commands will be enabled
+- `TWITCH_CLIENT_ID`: Your Twitch client ID (for Twitch integration)
+- `TWITCH_CLIENT_SECRET`: Your Twitch client secret (for Twitch integration)
+- `ENCRYPTION_KEY`: A 32-character random string used to encrypt sensitive data like API keys (REQUIRED)
+
+To generate a secure random ENCRYPTION_KEY, you can use:
+```bash
+openssl rand -base64 32 | cut -c1-32
+```
