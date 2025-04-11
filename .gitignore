@@ -33,3 +33,5 @@ go.work
 # SQLite database files
 *.db
 data/
+
+dist/

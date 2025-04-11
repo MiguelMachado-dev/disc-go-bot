@@ -3,21 +3,26 @@ APP_NAME = disc-go-bot
 IMAGE_TAG = latest
 DOCKERFILE_PATH = Dockerfile
 PORT = 8080
+DIST_DIR = dist
 
 # Default target
 all: build
 
+# Create dist directory
+create-dist:
+	mkdir -p $(DIST_DIR)
+
 # Build the application
-build:
-	go build -o $(APP_NAME)
+build: create-dist
+	go build -o $(DIST_DIR)/$(APP_NAME)
 
 # Build as Windows GUI application (no console window)
-build-gui:
-	go build -ldflags="-H=windowsgui" -o $(APP_NAME)
+build-gui: create-dist
+	go build -ldflags="-H=windowsgui" -o $(DIST_DIR)/$(APP_NAME)
 
 # Cross compile for Windows GUI application
-windows-gui:
-	GOOS=windows GOARCH=amd64 go build -ldflags="-H=windowsgui" -o $(APP_NAME).exe
+windows-gui: create-dist
+	GOOS=windows GOARCH=amd64 go build -ldflags="-H=windowsgui" -o $(DIST_DIR)/$(APP_NAME).exe
 
 # Build the Docker image
 docker-build:
@@ -44,7 +49,7 @@ docker-restart:
 
 # Clean up build artifacts
 clean:
-	rm -f $(APP_NAME)
+	rm -rf $(DIST_DIR)
 
 # Execute tests
 test:
@@ -52,10 +57,10 @@ test:
 
 # Build and run the application locally
 run: build
-	./$(APP_NAME)
+	$(DIST_DIR)/$(APP_NAME)
 
 # Build as GUI and run the application locally
 run-gui: build-gui
-	./$(APP_NAME)
+	$(DIST_DIR)/$(APP_NAME)
 
-.PHONY: all build build-gui windows-gui docker-build docker-run docker-stop docker-restart clean test run run-gui
+.PHONY: all create-dist build build-gui windows-gui docker-build docker-run docker-stop docker-restart clean test run run-gui
